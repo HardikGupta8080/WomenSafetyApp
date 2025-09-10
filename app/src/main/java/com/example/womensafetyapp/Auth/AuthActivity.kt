@@ -1,12 +1,15 @@
 package com.example.womensafetyapp.Auth
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -33,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.womensafetyapp.MainActivity
 import com.example.womensafetyapp.R
 import com.example.womensafetyapp.ui.theme.WomenSafetyAppTheme
 
@@ -41,14 +45,20 @@ class AuthActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             WomenSafetyAppTheme {
-                AuthScreen()
+                AuthScreen(
+                    onLoginSuccess = {
+                        // Navigate to MainActivity
+                        startActivity(Intent(this@AuthActivity, MainActivity::class.java))
+                        finish() // Close AuthActivity so user can't go back
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun AuthScreen() {
+fun AuthScreen(onLoginSuccess: () -> Unit) {
     var isLogin by remember { mutableStateOf(false) }
 
     Column(
@@ -57,11 +67,13 @@ fun AuthScreen() {
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFC7C6C9), // same as startColor in XML
-                        Color(0xFFFAF9F9)  // same as endColor
+                        Color(0xFFFF6B9D), // Bright pink
+                        Color(0xFFC44CE6), // Bright purple
+                        Color(0xFF6B73FF)  // Bright blue
                     )
                 )
-            ),
+            )
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -72,10 +84,19 @@ fun AuthScreen() {
 
         // 🔹 Auth Form (Login or Signup)
         if (isLogin) {
-            LoginForm(onSwitchToSignup = { isLogin = false })
+            LoginForm(
+                onSwitchToSignup = { isLogin = false },
+                onLoginSuccess = onLoginSuccess
+            )
         } else {
-            SignUpForm(onSwitchToLogin = { isLogin = true })
+            SignUpForm(
+                onSwitchToLogin = { isLogin = true },
+                onSignupSuccess = onLoginSuccess
+            )
         }
+        
+        // Add bottom padding to ensure content is not cut off
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -134,7 +155,7 @@ fun GradientHeader() {
 
 
 @Composable
-fun LoginForm(onSwitchToSignup: () -> Unit) {
+fun LoginForm(onSwitchToSignup: () -> Unit, onLoginSuccess: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
@@ -144,19 +165,20 @@ fun LoginForm(onSwitchToSignup: () -> Unit) {
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth(0.9f),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(8.dp)
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.95f))
     ) {
         Column(
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("SafeGuard", fontSize = 28.sp, color = Color(0xFF9C27B0), fontWeight = FontWeight.Bold)
+            Text("SafeGuard", fontSize = 28.sp, color = Color(0xFFFF6B9D), fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(16.dp))
             Text("Welcome Back", style = MaterialTheme.typography.titleLarge)
 
             if (error.isNotEmpty()) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(6.dp))
                 Text(error, color = Color.Red, fontSize = 12.sp)
             }
 
@@ -167,10 +189,14 @@ fun LoginForm(onSwitchToSignup: () -> Unit) {
                 label = { Text("Email") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFF6B9D),
+                    unfocusedBorderColor = Color(0xFFC44CE6).copy(alpha = 0.5f)
+                )
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -190,7 +216,7 @@ fun LoginForm(onSwitchToSignup: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -198,8 +224,9 @@ fun LoginForm(onSwitchToSignup: () -> Unit) {
                     .background(
                         brush = Brush.horizontalGradient(
                             colors = listOf(
-                                Color(0xFF8E2DE2), // Purple
-                                Color(0xFFDA22FF)  // Pink
+                                Color(0xFFFF6B9D), // Bright pink
+                                Color(0xFFC44CE6), // Bright purple
+                                Color(0xFF6B73FF)  // Bright blue
                             )
                         ),
                         shape = RoundedCornerShape(12.dp)
@@ -210,7 +237,9 @@ fun LoginForm(onSwitchToSignup: () -> Unit) {
                         if (email.isBlank() || password.isBlank()) {
                             error = "Please fill in all fields"
                         } else {
-                            error = "" // TODO: integrate ViewModel login
+                            error = ""
+                            // For UI development - simulate successful login
+                            onLoginSuccess()
                         }
                     },
                     modifier = Modifier
@@ -230,10 +259,11 @@ fun LoginForm(onSwitchToSignup: () -> Unit) {
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
             Text(
                 text = "Don't have an account? Sign Up",
-                color = Color(0xFF9C27B0),
+                color = Color(0xFFFF6B9D),
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable { onSwitchToSignup() }
             )
         }
@@ -241,7 +271,7 @@ fun LoginForm(onSwitchToSignup: () -> Unit) {
 }
 
 @Composable
-fun SignUpForm(onSwitchToLogin: () -> Unit) {
+fun SignUpForm(onSwitchToLogin: () -> Unit, onSignupSuccess: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -254,43 +284,52 @@ fun SignUpForm(onSwitchToLogin: () -> Unit) {
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth(0.9f),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(8.dp)
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.95f))
     ) {
         Column(
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("SafeGuard", fontSize = 28.sp, color = Color(0xFF9C27B0), fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(16.dp))
+            Text("SafeGuard", fontSize = 28.sp, color = Color(0xFFFF6B9D), fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(12.dp))
             Text("Create Account", style = MaterialTheme.typography.titleLarge)
 
             if (error.isNotEmpty()) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(6.dp))
                 Text(error, color = Color.Red, fontSize = 12.sp)
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Full Name") },
                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFF6B9D),
+                    unfocusedBorderColor = Color(0xFFC44CE6).copy(alpha = 0.5f)
+                )
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFFF6B9D),
+                    unfocusedBorderColor = Color(0xFFC44CE6).copy(alpha = 0.5f)
+                )
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -309,11 +348,11 @@ fun SignUpForm(onSwitchToLogin: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
-                label = { Text("Confirm Password") },
+                label = { Text("Confirm Password", maxLines = 1) },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 singleLine = true,
                 visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
@@ -328,7 +367,7 @@ fun SignUpForm(onSwitchToLogin: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -336,8 +375,9 @@ fun SignUpForm(onSwitchToLogin: () -> Unit) {
                     .background(
                         brush = Brush.horizontalGradient(
                             colors = listOf(
-                                Color(0xFF8E2DE2), // Purple
-                                Color(0xFFDA22FF)  // Pink
+                                Color(0xFFFF6B9D), // Bright pink
+                                Color(0xFFC44CE6), // Bright purple
+                                Color(0xFF6B73FF)  // Bright blue
                             )
                         ),
                         shape = RoundedCornerShape(12.dp)
@@ -348,7 +388,9 @@ fun SignUpForm(onSwitchToLogin: () -> Unit) {
                         if (email.isBlank() || password.isBlank()) {
                             error = "Please fill in all fields"
                         } else {
-                            error = "" // TODO: integrate ViewModel login
+                            error = ""
+                            // For UI development - simulate successful signup
+                            onSignupSuccess()
                         }
                     },
                     modifier = Modifier
@@ -368,10 +410,12 @@ fun SignUpForm(onSwitchToLogin: () -> Unit) {
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
             Text(
-                text = "Already have an account? Sign In",
-                color = Color(0xFFE91E63),
+                text = "Already have an account?",
+                color = Color(0xFFFF6B9D),
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
                 modifier = Modifier.clickable { onSwitchToLogin() }
             )
         }
@@ -382,6 +426,6 @@ fun SignUpForm(onSwitchToLogin: () -> Unit) {
 @Composable
 fun AuthPreview() {
     WomenSafetyAppTheme {
-        AuthScreen()
+        AuthScreen(onLoginSuccess = { /* Preview - no action */ })
     }
 }

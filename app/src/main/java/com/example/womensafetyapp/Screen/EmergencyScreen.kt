@@ -7,9 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,7 +72,7 @@ fun EmergencyCard() {
             .padding(16.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors()
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
             modifier = Modifier
@@ -213,62 +211,93 @@ fun EmergencyCard() {
 @Composable
 fun EmergencyResourcesScreen() {
     val emergencyTypes = listOf(
-        EmergencyType("Medical Emergency", Icons.Default.Favorite, Color.Red, "Call 911 for medical emergencies"),
-        EmergencyType("Fire Emergency", Icons.Default.LocalFireDepartment, Color(0xFFFFA500), "Fire department emergency line"),
-        EmergencyType("Police Emergency", Icons.Default.Security, Color.Blue, "Police emergency response"),
-        EmergencyType("Car Accident", Icons.Default.DirectionsCar, Color(0xFFFFD700), "Traffic accident or road emergency")
+        EmergencyType("Medical Emergency", Icons.Default.Favorite, Color.Red, "Call for medical emergencies", "Call Ambulance"),
+        EmergencyType("Fire Emergency", Icons.Default.LocalFireDepartment, Color(0xFFFFA500), "Fire department emergency line", "Call Fire Dept"),
+        EmergencyType("Police Emergency", Icons.Default.Security, Color.Blue, "Police emergency response", "Call Police"),
+        EmergencyType("Car Accident", Icons.Default.DirectionsCar, Color(0xFFFFD700), "Traffic accident or road emergency", "Call 911")
     )
 
     val quickInfo = listOf(
-        QuickInfo("Current Location", Icons.Default.Place, "GPS coordinates will be shared with emergency services", "Share Location"),
-        QuickInfo("Medical Info", Icons.Default.MedicalServices, "Blood type, allergies, medications", "View Details"),
-        QuickInfo("Emergency Contacts", Icons.Default.People, "3 contacts will be notified automatically", "View Contacts")
+        QuickInfo("Current Location", Icons.Default.Place, "GPS coordinates will be shared with emergency services", "Share Location", Color(0xFF4CAF50)),
+        QuickInfo("Medical Info", Icons.Default.MedicalServices, "Blood type, allergies, medications", "View Details", Color(0xFF2196F3)),
+        QuickInfo("Emergency Contacts", Icons.Default.People, "3 contacts will be notified automatically", "View Contacts", Color(0xFF9C27B0))
     )
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
-        .padding(16.dp),
+    Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Quick Emergency Response
         Text("Quick Emergency Response", fontWeight = FontWeight.Bold, color = Color.Red, fontSize = 18.sp)
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.heightIn(max = 400.dp)
+            modifier = Modifier.padding(4.dp)
         ) {
-            items(emergencyTypes) { item ->
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Color.Gray),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors()
+            // Create rows with 2 items each
+            emergencyTypes.chunked(2).forEach { rowItems ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(
+                    rowItems.forEach { item ->
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Color.Gray),
                             modifier = Modifier
-                                .size(48.dp)
-                                .background(item.color, shape = CircleShape),
-                            contentAlignment = Alignment.Center
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .height(180.dp), // Fixed height for all cards
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
-                            Icon(item.icon, contentDescription = null, tint = Color.White)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(12.dp),
+                                verticalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .background(item.color, shape = CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(item.icon, contentDescription = null, tint = Color.White)
+                                }
+                                Text(
+                                    text = item.title, 
+                                    fontWeight = FontWeight.Bold, 
+                                    fontSize = 14.sp, 
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = item.description, 
+                                    fontSize = 12.sp, 
+                                    color = Color.Gray, 
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Button(
+                                    onClick = { /* TODO: Handle emergency call */ },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = item.buttonText, 
+                                        color = Color.White,
+                                        fontSize = 12.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
                         }
-                        Text(item.title, fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.Center)
-                        Text(item.description, fontSize = 12.sp, color = Color.Gray, textAlign = TextAlign.Center)
-                        Button(
-                            onClick = { /* TODO: Call 911 */ },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Call 911", color = Color.White)
-                        }
+                    }
+                    // Add empty space if odd number of items in the last row
+                    if (rowItems.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
@@ -278,32 +307,65 @@ fun EmergencyResourcesScreen() {
         Text("Emergency Information", fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 16.sp)
         quickInfo.forEach { info ->
             Card(
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, Color.Gray),
+                shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors()
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Row(
-                    modifier = Modifier.padding(12.dp),
+                    modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(Color.LightGray, shape = CircleShape),
+                                .background(info.color.copy(alpha = 0.1f), shape = CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(info.icon, contentDescription = null, tint = Color.Black)
+                            Icon(
+                                imageVector = info.icon, 
+                                contentDescription = null, 
+                                tint = info.color,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
-                        Column {
-                            Text(info.title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text(info.content, fontSize = 12.sp, color = Color.Gray)
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Text(
+                                text = info.title, 
+                                fontWeight = FontWeight.SemiBold, 
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            )
+                            Text(
+                                text = info.content, 
+                                fontSize = 14.sp, 
+                                color = Color.Gray,
+                                lineHeight = 18.sp
+                            )
                         }
                     }
-                    Button(onClick = { /* TODO: Action */ }, colors = ButtonDefaults.outlinedButtonColors()) {
-                        Text(info.action, fontSize = 12.sp)
+                    Button(
+                        onClick = { /* TODO: Action */ },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = info.color
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = info.action, 
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }
@@ -311,7 +373,7 @@ fun EmergencyResourcesScreen() {
 
         // Emergency Tip
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF4E5)),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
             border = BorderStroke(1.dp, Color(0xFFFFD580)),
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth()
@@ -329,8 +391,8 @@ fun EmergencyResourcesScreen() {
     }
 }
 
-data class EmergencyType(val title: String, val icon: ImageVector, val color: Color, val description: String)
-data class QuickInfo(val title: String, val icon: ImageVector, val content: String, val action: String)
+data class EmergencyType(val title: String, val icon: ImageVector, val color: Color, val description: String, val buttonText: String)
+data class QuickInfo(val title: String, val icon: ImageVector, val content: String, val action: String, val color: Color)
 
 
 
