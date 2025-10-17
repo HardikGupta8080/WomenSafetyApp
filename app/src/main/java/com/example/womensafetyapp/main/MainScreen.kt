@@ -1,6 +1,7 @@
 package com.example.womensafetyapp.ui.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,12 +46,44 @@ fun MainScreen(
             ) {
                 NavigationTabs(selectedTab = selectedTab, onTabSelected = { selectedTab = it })
 
-                when (selectedTab) {
-                    0 -> EmergencyScreen()
-                    1 -> ContactsScreen(contactsViewModel = contactsViewModel)
-                    2 -> FeaturesScreen()
-                    3 -> TipsScreen()
-                    4 -> ProfileScreen()
+                // Add Box to ensure proper content rendering
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    when (selectedTab) {
+                        0 -> {
+                            // Use key to force recomposition
+                            key("emergency_screen") {
+                                EmergencyScreen()
+                            }
+                        }
+                        1 -> {
+                            key("contacts_screen") {
+                                ContactsScreen(contactsViewModel = contactsViewModel)
+                            }
+                        }
+                        2 -> {
+                            key("features_screen") {
+                                FeaturesScreen()
+                            }
+                        }
+                        3 -> {
+                            key("tips_screen") {
+                                TipsScreen()
+                            }
+                        }
+                        4 -> {
+                            key("profile_screen") {
+                                ProfileScreen()
+                            }
+                        }
+                        else -> {
+                            // Default fallback to Emergency screen
+                            key("default_emergency") {
+                                EmergencyScreen()
+                            }
+                        }
+                    }
                 }
             }
         }
