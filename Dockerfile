@@ -2,19 +2,24 @@ FROM eclipse-temurin:17-jdk-focal AS builder
 
 WORKDIR /app
 
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+# Copy the wrapper and pom from BackendAPI
+COPY BackendAPI/mvnw .
+COPY BackendAPI/.mvn .mvn
+COPY BackendAPI/pom.xml .
 
-# 🔥 FIX: give permission
+# Give execution permission to maven wrapper
 RUN chmod +x mvnw
 
+# Download dependencies
 RUN ./mvnw dependency:go-offline
 
-COPY src src
+# Copy the source code
+COPY BackendAPI/src src
 
+# Build the project
 RUN ./mvnw clean package -DskipTests
 
+# Stage 2: Run the application
 FROM eclipse-temurin:17-jre-focal
 
 WORKDIR /app
