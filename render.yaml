@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: women-security-backend
+    env: docker
+    rootDir: BackendAPI # Tells Render that the Dockerfile and code are inside this folder
+    plan: free # Uses the free tier
+    envVars:
+      - key: PORT
+        value: 10000
