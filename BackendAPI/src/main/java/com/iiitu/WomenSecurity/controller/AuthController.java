@@ -40,6 +40,9 @@ public class AuthController {
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "User registered successfully");
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        response.put("phoneNumber", user.getPhoneNumber());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -52,6 +55,9 @@ public class AuthController {
         if(encoder.matches(loginDto.getPassword(), dbUser.getPassword())){
             Map<String, String> response = new HashMap<>();
             response.put("token", jwtService.generateToken(dbUser.getUsername()));
+            response.put("username", dbUser.getUsername());
+            response.put("email", dbUser.getEmail());
+            response.put("phoneNumber", dbUser.getPhoneNumber());
             return ResponseEntity.ok(response);
         }
 
